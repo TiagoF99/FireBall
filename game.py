@@ -1,7 +1,7 @@
 import pygame
 from pygame import USEREVENT
-from player_game import Player, Fire
 from random import randint
+from player_game import Player, Fire, AI
 
 pygame.init()
 screen_width = 700
@@ -29,6 +29,12 @@ num_players = 1
 # This is the difficulty
 difficulty = 2
 
+# decides whether there is a computer ai(True) or not (False)
+ai = True
+computer = []
+if ai is True:
+    computer.append(AI(screen_width//2, screen_height//2))
+
 player_list = []
 for i in range(num_players):
     player_list.append(Player(screen_width//2, screen_height//2))
@@ -51,13 +57,13 @@ def fire_ball_settings(difficult: int)-> tuple:
         fire_generate = 2
         speed = 7
     elif difficult == 2:
-        fire_generate = 6
-        speed = 9
+        fire_generate = 4
+        speed = 6
     return fire_generate, speed
 
 
 fire_nums, fire_speed = fire_ball_settings(difficulty)
-radius = 15
+radius = 18
 
 
 def movement(number: int)-> None:
@@ -160,6 +166,27 @@ while not done:
                                                               radius, radius))
         new.append(b)
 
+    if ai is True:
+        comp = pygame.draw.rect(screen, computer[0].colour, pygame.Rect(
+            computer[0].x, computer[0].y, block_width, block_height))
+        for fire in new:
+            if abs(fire.x - comp.x) in range(fire_speed*3) and fire.y in range(comp.y - block_height, comp.y + block_height*2):
+                if fire.x > comp.x:
+                    if computer[0].x > fire_speed:
+                        computer[0].x -= fire_speed
+                elif fire.x < comp.x:
+                    if computer[0].x < screen_width - block_width - fire_speed:
+                        computer[0].x += fire_speed
+            if abs(fire.y - comp.y) in range(fire_speed*3) and fire.x in range(comp.x - block_width, comp.x + block_width * 2):
+                if fire.y > comp.y:
+                    if computer[0].y > fire_speed:
+                        computer[0].y -= fire_speed
+                elif fire.x < comp.x:
+                    if computer[0].y < screen_height - block_height - fire_speed:
+                        computer[0].y += fire_speed
+            if comp.colliderect(fire):
+                done = True
+
     for player in player_list:
         a = pygame.draw.rect(screen, player.colour, pygame.Rect(player.x,
                                                                 player.y,
@@ -179,7 +206,7 @@ while not done:
             ball.y -= fire_speed
         elif ball.speed == 3:
             ball.x -= fire_speed
-        elif ball.speed == 3:
+        elif ball.speed == 4:
             ball.x -= fire_speed
             ball.y += fire_speed
 
